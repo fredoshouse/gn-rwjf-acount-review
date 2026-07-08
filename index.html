@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RWJF Account Review · Ghost Note</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0A0A0A;
+    --paper:#FAFAF9;
+    --graphite:#3D3D3D;
+    --ash:#8A8A85;
+    --hairline:#D8D6D1;
+    --panel:#F1F0EC;
+    --signal:#B4321E;
+    --signal-soft:#FBEDEA;
+    --display:'DM Serif Display', Georgia, serif;
+    --body:'Inter', -apple-system, sans-serif;
+    --mono:'JetBrains Mono', monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;overflow:hidden}
+  body{
+    background:var(--ink);
+    font-family:var(--body);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ---------- Rail ---------- */
+  #rail{
+    display:flex;
+    height:100vh;
+    width:100vw;
+    transition:transform .72s cubic-bezier(.16,.84,.24,1);
+    will-change:transform;
+  }
+  .slide{
+    flex:0 0 100vw;
+    height:100vh;
+    background:var(--paper);
+    border-right:1px solid var(--hairline);
+    padding:clamp(40px,5.2vw,88px) clamp(32px,6vw,110px);
+    display:flex;
+    flex-direction:column;
+    position:relative;
+    overflow:hidden;
+  }
+
+  /* ---------- Chrome ---------- */
+  .eyebrow{
+    font-family:var(--mono);
+    font-size:10px;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--ash);
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    padding-bottom:14px;
+    border-bottom:1px solid var(--hairline);
+    margin-bottom:clamp(24px,3.4vw,52px);
+    flex:0 0 auto;
+  }
+  .eyebrow .idx{color:var(--ink);font-weight:500}
+  .body{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;padding-right:6px;padding-bottom:clamp(76px,7vw,96px)}
+  .body::-webkit-scrollbar{width:3px}
+  .body::-webkit-scrollbar-thumb{background:var(--hairline)}
+
+  h1{
+    font-family:var(--display);
+    font-weight:400;
+    font-size:clamp(38px,5.4vw,88px);
+    line-height:.98;
+    letter-spacing:-.015em;
+    margin-bottom:.32em;
+  }
+  h2{
+    font-family:var(--display);
+    font-weight:400;
+    font-size:clamp(28px,3.5vw,54px);
+    line-height:1.04;
+    letter-spacing:-.01em;
+    margin-bottom:.5em;
+  }
+  h3{
+    font-family:var(--body);
+    font-weight:600;
+    font-size:13px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:var(--graphite);
+    margin-bottom:14px;
+  }
+  p{
+    font-size:clamp(14px,1.06vw,17px);
+    line-height:1.62;
+    color:var(--graphite);
+    max-width:66ch;
+    margin-bottom:1em;
+  }
+  p.lede{
+    font-size:clamp(17px,1.5vw,24px);
+    line-height:1.46;
+    color:var(--ink);
+    max-width:52ch;
+  }
+  strong{color:var(--ink);font-weight:600}
+  em{font-family:var(--display);font-style:italic;font-size:1.05em}
+
+  .rule{height:1px;background:var(--hairline);margin:clamp(20px,2.4vw,36px) 0}
+
+  /* ---------- Cover ---------- */
+  .cover{justify-content:space-between}
+  .wordmark{
+    font-family:var(--display);
+    font-size:clamp(22px,2vw,30px);
+    letter-spacing:-.01em;
+    display:flex;align-items:center;gap:12px;
+  }
+  .wordmark .gn-mark{
+    font-family:var(--body);font-style:normal;font-weight:300;
+    font-size:.72em;color:var(--ash);line-height:1;
+    transform:translateY(-1px);
+  }
+  .wordmark span{color:var(--graphite);font-family:var(--mono);font-size:.4em;letter-spacing:.22em;text-transform:uppercase}
+  .cover-kicker{
+    font-family:var(--mono);font-size:10px;letter-spacing:.24em;text-transform:uppercase;
+    color:var(--ash);margin-bottom:clamp(18px,2.2vw,32px);
+    display:flex;align-items:center;gap:12px;
+  }
+  .cover-kicker::before{content:'';width:34px;height:1px;background:var(--ink);display:inline-block}
+  .cover-mid{display:flex;flex-direction:column;justify-content:center;flex:1}
+  .cover h1{font-size:clamp(40px,6.6vw,110px);max-width:15ch}
+
+  /* Running GN mark, bottom-left of every non-cover slide.
+     Offset clears the 56px fixed nav. */
+  .slide:not(.cover)::after{
+    content:'GHOST NOTE';
+    position:absolute;left:clamp(32px,6vw,110px);bottom:calc(56px + clamp(14px,1.6vw,24px));
+    font-family:var(--mono);font-size:8.5px;letter-spacing:.28em;
+    color:var(--hairline);pointer-events:none;z-index:2;
+  }
+  .slide.invert:not(.cover)::after{color:#3A3A38}
+  @media (max-width:820px){.slide:not(.cover)::after{display:none}}
+  .cover-meta{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+    gap:clamp(16px,2vw,40px);
+    padding-top:22px;
+    border-top:1px solid var(--hairline);
+  }
+  .cover-meta dt{font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--ash);margin-bottom:7px}
+  .cover-meta dd{font-size:14px;color:var(--ink);line-height:1.45}
+
+  /* ---------- Thesis (inverted) ---------- */
+  .invert{background:var(--ink)}
+  .invert h1,.invert h2{color:var(--paper)}
+  .invert p{color:#B8B6B0}
+  .invert p.lede{color:var(--paper)}
+  .invert strong{color:#fff}
+  .invert .eyebrow{color:#6E6C68;border-bottom-color:#2A2A2A}
+  .invert .eyebrow .idx{color:var(--paper)}
+  .invert .rule{background:#2A2A2A}
+  .invert h3{color:#8A8A85}
+  .thesis-body{display:flex;flex-direction:column;justify-content:center;height:100%;padding-bottom:0}
+  .invert .body{padding-bottom:clamp(56px,5vw,72px)}
+  .thesis-body h2{font-size:clamp(30px,4.2vw,68px);max-width:19ch;line-height:1.02}
+
+  /* ---------- Two bids ---------- */
+  .bids{display:grid;grid-template-columns:1fr 1fr;gap:clamp(18px,2.2vw,40px);margin-top:8px}
+  .bid{border:1px solid var(--hairline);padding:clamp(20px,2.2vw,36px);display:flex;flex-direction:column}
+  .bid.primary{background:var(--ink);border-color:var(--ink)}
+  .bid.primary .bid-tag,.bid.primary p{color:#B8B6B0}
+  .bid.primary .bid-val,.bid.primary .bid-name{color:var(--paper)}
+  .bid.contest{border:1px solid var(--ink);border-style:solid;position:relative;background:var(--panel)}
+  .bid.contest::before{
+    content:'';position:absolute;inset:5px;border:1px dashed var(--hairline);pointer-events:none;
+  }
+  .bid.contest .bid-tag{color:var(--graphite)}
+  .bid-tag{font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--ash);margin-bottom:auto;padding-bottom:28px}
+  .bid-val{font-family:var(--display);font-size:clamp(40px,4.6vw,76px);line-height:1;letter-spacing:-.02em;margin-bottom:6px}
+  .bid-name{font-size:15px;font-weight:600;margin-bottom:12px}
+  .bid p{font-size:13.5px;line-height:1.55;margin:0}
+
+  /* ---------- Data / stats ---------- */
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:1px;background:var(--hairline);border:1px solid var(--hairline)}
+  .stat{background:var(--paper);padding:clamp(18px,1.9vw,30px)}
+  .stat-n{font-family:var(--display);font-size:clamp(30px,3.4vw,54px);line-height:1;letter-spacing:-.02em;margin-bottom:9px}
+  .stat-l{font-size:12.5px;color:var(--ash);line-height:1.4}
+
+  /* ---------- Lists ---------- */
+  .stack{display:flex;flex-direction:column;gap:0;border-top:1px solid var(--hairline)}
+  .row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.85fr);gap:clamp(16px,2.4vw,52px);padding:clamp(15px,1.5vw,24px) 0;border-bottom:1px solid var(--hairline);align-items:start}
+  .row-k{font-size:14.5px;font-weight:600;color:var(--ink);line-height:1.4}
+  .row-v{font-size:14px;color:var(--graphite);line-height:1.58}
+  .row-v strong{font-weight:600}
+
+  /* ---------- Table ---------- */
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th{
+    font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--ash);text-align:left;font-weight:400;
+    padding:0 14px 12px 0;border-bottom:1px solid var(--ink);
+  }
+  th.n,td.n{text-align:right;padding-right:0}
+  td{padding:13px 14px 13px 0;border-bottom:1px solid var(--hairline);color:var(--graphite);vertical-align:top;line-height:1.5}
+  td:first-child{color:var(--ink);font-weight:500}
+  tr.total td{border-bottom:none;border-top:1px solid var(--ink);font-weight:600;color:var(--ink);padding-top:14px}
+  .tbd-tag{font-family:var(--mono);font-style:normal;font-size:8.5px;font-weight:500;letter-spacing:.14em;color:var(--signal);background:var(--signal-soft);border:1px solid rgba(180,50,30,.28);padding:2px 5px;margin-left:7px;vertical-align:1px}
+  tr.tbd-row td:first-child{color:var(--signal)}
+  .num{font-family:var(--mono);font-size:12.5px;letter-spacing:-.01em}
+
+  /* ---------- Pod ---------- */
+  .pods{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:1px;background:var(--hairline);border:1px solid var(--hairline)}
+  .pod{background:var(--paper);padding:clamp(16px,1.7vw,26px)}
+  .pod-h{font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ash);padding-bottom:12px;margin-bottom:14px;border-bottom:1px solid var(--hairline)}
+  .pod li{list-style:none;font-size:13px;color:var(--graphite);line-height:1.5;padding:9px 0;border-bottom:1px solid rgba(216,214,209,.5)}
+  .pod li:last-child{border-bottom:none}
+  .pod li b{display:block;color:var(--ink);font-weight:600;font-size:13.5px;margin-bottom:3px}
+  .pod li b i{font-family:var(--body);font-style:normal;font-weight:400;color:var(--ash);font-size:11.5px;letter-spacing:.01em}
+  .pod li strong{color:var(--ink);font-weight:600}
+  .pod li.lead b::after{content:'lead';font-family:var(--mono);font-weight:400;color:var(--paper);background:var(--ink);font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;margin-left:8px;padding:2px 6px;vertical-align:1.5px}
+  .pod li.tbd b{color:var(--signal)}
+  .pod li.tbd b::before{content:'TBD';font-family:var(--mono);font-weight:500;color:var(--signal);background:var(--signal-soft);border:1px solid rgba(180,50,30,.28);font-size:8.5px;letter-spacing:.14em;margin-right:8px;padding:2px 5px;vertical-align:1.5px}
+  .pod li.tbd strong{color:var(--signal)}
+
+  /* ---------- Split / allocation / calls ---------- */
+  .split{display:grid;grid-template-columns:1fr 1.35fr;gap:clamp(24px,3.4vw,64px);align-items:start}
+  .alloc{display:flex;flex-direction:column;gap:0}
+  .al{display:grid;grid-template-columns:1fr auto;gap:8px 14px;padding:10px 0;border-bottom:1px solid var(--hairline);align-items:baseline}
+  .al span{font-size:13.5px;color:var(--ink);font-weight:500}
+  .al b{font-family:var(--display);font-weight:400;font-size:22px;letter-spacing:-.01em;line-height:1}
+  .al i{grid-column:1/-1;font-family:var(--mono);font-style:normal;font-size:10.5px;letter-spacing:.06em;color:var(--ash);margin-top:-2px}
+  .calls{list-style:none}
+  .calls li{font-size:13px;color:var(--graphite);line-height:1.55;padding:9px 0 9px 16px;border-left:1px solid var(--hairline);margin-bottom:2px}
+  .calls li b{color:var(--ink);font-weight:600}
+
+  /* ---------- Deadlines ---------- */
+  .deadlines{margin-bottom:22px}
+  .dl-head{font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ash);margin-bottom:18px}
+  .dl-track{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(14px,2vw,36px)}
+  .dl-step{position:relative;padding-top:16px;border-top:1px solid var(--hairline)}
+  .dl-step.done{border-top-color:var(--ash)}
+  .dl-step.hot{border-top:2px solid var(--signal);padding-top:15px}
+  .dl-dot{position:absolute;top:-4px;left:0;width:7px;height:7px;border-radius:50%;background:var(--hairline)}
+  .dl-step.done .dl-dot{background:var(--ink)}
+  .dl-step.hot .dl-dot{background:var(--signal);top:-5px;width:9px;height:9px}
+  .dl-when{font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink);margin-bottom:7px}
+  .dl-step.hot .dl-when{color:var(--signal);font-weight:500}
+  .dl-what{font-size:14px;font-weight:600;color:var(--ink);line-height:1.35}
+  .dl-what span{display:block;font-weight:400;font-size:12.5px;color:var(--ash);margin-top:4px;line-height:1.45}
+  @media (max-width:820px){.dl-track{grid-template-columns:1fr;gap:20px}}
+
+  /* ---------- Doc link ---------- */
+  .doclink{
+    display:block;margin-top:20px;padding:14px 16px;
+    border:1px solid var(--hairline);text-decoration:none;
+    transition:border-color .2s,background .2s;
+  }
+  .doclink:hover{border-color:var(--ink);background:var(--panel)}
+  .doclink.inline{margin-top:14px;max-width:66ch}
+  .dl-t{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--ash);margin-bottom:6px}
+  .dl-n{display:block;font-size:13.5px;color:var(--ink);font-weight:500;line-height:1.4}
+
+  /* ---------- Signal emphasis ---------- */
+  p.flag{border-left:2px solid var(--signal);padding-left:14px}
+  p.flag strong{color:var(--signal)}
+  .calls li.hot{border-left-color:var(--signal)}
+  .calls li.hot b{color:var(--signal)}
+
+  /* ---------- Burn chart ---------- */
+  .burn{display:flex;align-items:flex-end;gap:clamp(10px,1.4vw,26px);height:clamp(160px,20vh,260px);margin:26px 0 0;padding-bottom:0;border-bottom:1px solid var(--ink)}
+  .bar{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%}
+  .bar-fill{width:100%;background:var(--ink);position:relative;transition:height .9s cubic-bezier(.16,.84,.24,1)}
+  .bar.fallback .bar-fill{background:var(--hairline);border:1px solid var(--ash);border-bottom:none}
+  .bar-val{font-family:var(--mono);font-size:11px;color:var(--ink);padding-bottom:8px;letter-spacing:-.02em}
+  .burn-x{display:flex;gap:clamp(10px,1.4vw,26px);margin-top:11px}
+  .burn-x div{flex:1;text-align:center;font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ash)}
+  .legend{display:flex;gap:26px;margin-top:22px;font-size:12px;color:var(--ash)}
+  .legend span{display:flex;align-items:center;gap:8px}
+  .swatch{width:22px;height:9px;display:inline-block}
+  .swatch.solid{background:var(--ink)}
+  .swatch.hollow{background:var(--hairline);border:1px solid var(--ash)}
+
+  /* ---------- Cadence ---------- */
+  .cadence{display:flex;flex-direction:column;border-top:1px solid var(--hairline)}
+  .cad{display:grid;grid-template-columns:130px 1fr auto;gap:clamp(14px,2vw,40px);padding:14px 0;border-bottom:1px solid var(--hairline);align-items:baseline}
+  .cad-when{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink)}
+  .cad-what{font-size:14px;color:var(--graphite);line-height:1.5}
+  .cad-who{font-size:12px;color:var(--ash);text-align:right;white-space:nowrap}
+
+  /* ---------- Growth ---------- */
+  .growth{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--hairline);border:1px solid var(--hairline);margin-top:6px}
+  .g{background:var(--paper);padding:clamp(18px,2vw,32px)}
+  .g:last-child{background:var(--ink)}
+  .g:last-child .g-h,.g:last-child .g-n{color:var(--paper)}
+  .g:last-child .g-s{color:#8A8A85}
+  .g-h{font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ash);margin-bottom:16px}
+  .g-n{font-family:var(--display);font-size:clamp(26px,2.9vw,44px);line-height:1;letter-spacing:-.02em;margin-bottom:8px}
+  .g-s{font-size:12.5px;color:var(--ash);line-height:1.45}
+
+  /* ---------- Ladder ---------- */
+  .ladder{display:grid;grid-template-columns:1fr 1fr;gap:clamp(18px,2.2vw,40px)}
+  .lad{border-top:2px solid var(--ink);padding-top:20px}
+  .lad.sub{border-top-color:var(--hairline)}
+  .lad-t{font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ash);margin-bottom:14px}
+  .lad h4{font-family:var(--display);font-weight:400;font-size:clamp(21px,2.1vw,32px);line-height:1.1;margin-bottom:12px}
+  .lad p{font-size:13.5px;line-height:1.56;margin:0}
+
+  /* ---------- Closing ---------- */
+  .close-body{display:flex;flex-direction:column;justify-content:center;height:100%}
+  .next{counter-reset:n;border-top:1px solid #2A2A2A;margin-top:6px}
+  .next li{
+    list-style:none;counter-increment:n;
+    display:grid;grid-template-columns:44px 1fr;gap:clamp(14px,1.8vw,32px);
+    padding:clamp(13px,1.4vw,20px) 0;border-bottom:1px solid #2A2A2A;align-items:baseline;
+  }
+  .next li::before{content:counter(n,decimal-leading-zero);font-family:var(--mono);font-size:11px;color:#6E6C68;letter-spacing:.08em}
+  .next b{color:var(--paper);font-weight:600;font-size:15px}
+  .next b .due{
+    font-family:var(--mono);font-style:normal;font-weight:500;font-size:8.5px;
+    letter-spacing:.14em;text-transform:uppercase;
+    color:#FF6B4A;border:1px solid rgba(255,107,74,.35);background:rgba(255,107,74,.09);
+    padding:2px 6px;margin-left:10px;vertical-align:2px;white-space:nowrap;
+  }
+  @media (max-width:820px){.next b .due{display:block;margin:6px 0 0;width:fit-content}}
+  .next span{color:#B8B6B0;font-size:14px;line-height:1.55;display:block;margin-top:4px}
+
+  /* ---------- Signoff ---------- */
+  .signoff{
+    display:flex;align-items:baseline;justify-content:space-between;gap:20px;
+    margin-top:clamp(26px,3vw,48px);padding-top:20px;border-top:1px solid #2A2A2A;
+  }
+  .so-mark{font-family:var(--display);font-size:clamp(16px,1.5vw,22px);color:var(--paper);letter-spacing:-.01em}
+  .so-note{font-family:var(--mono);font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:#6E6C68;text-align:right}
+  @media (max-width:820px){.signoff{flex-direction:column;gap:8px}.so-note{text-align:left}}
+
+  /* ---------- Nav ---------- */
+  #nav{
+    position:fixed;bottom:0;left:0;right:0;height:56px;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 clamp(20px,3vw,44px);
+    background:rgba(250,250,249,.92);backdrop-filter:blur(12px);
+    border-top:1px solid var(--hairline);z-index:50;
+  }
+  #nav.dark{background:rgba(10,10,10,.92);border-top-color:#2A2A2A}
+  #nav.dark .dots i{background:#3A3A38}
+  #nav.dark .dots i.on{background:var(--paper)}
+  #nav.dark button{color:var(--paper);border-color:#3A3A38}
+  #nav.dark button:hover:not(:disabled){background:var(--paper);color:var(--ink)}
+  #nav.dark .counter{color:#6E6C68}
+  #nav.dark .counter b{color:var(--paper)}
+  .dots{display:flex;gap:7px;align-items:center}
+  .dots i{width:22px;height:2px;background:var(--hairline);cursor:pointer;transition:background .3s,transform .3s;transform-origin:center}
+  .dots i.on{background:var(--ink);transform:scaleY(2.5)}
+  .dots i:hover{background:var(--graphite)}
+  .navr{display:flex;align-items:center;gap:18px}
+  .counter{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;color:var(--ash)}
+  .counter b{color:var(--ink);font-weight:500}
+  button{
+    font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;
+    background:none;border:1px solid var(--hairline);color:var(--ink);
+    padding:9px 15px;cursor:pointer;transition:all .22s;
+  }
+  button:hover:not(:disabled){background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  button:disabled{opacity:.28;cursor:default}
+  button:focus-visible{outline:2px solid var(--ash);outline-offset:2px}
+
+  .confidential{position:fixed;top:0;right:0;font-family:var(--mono);font-size:8.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--ash);padding:14px 18px;z-index:40;pointer-events:none}
+  .confidential.dark{color:#5A5A56}
+
+  @media (max-width:820px){
+    .bids,.ladder{grid-template-columns:1fr}
+    .growth{grid-template-columns:1fr 1fr}
+    .row{grid-template-columns:1fr;gap:6px}
+    .cad{grid-template-columns:1fr;gap:4px}
+    .cad-who{text-align:left}
+    .slide{padding:32px 24px 76px}
+    .burn{height:140px}
+    .confidential{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){
+    #rail{transition:none}
+    .bar-fill{transition:none}
+  }
+</style>
+</head>
+<body>
+
+<div class="confidential" id="conf">Internal · Do not distribute</div>
+
+<div id="rail">
+
+  <!-- 01 COVER -->
+  <section class="slide cover">
+    <div class="wordmark">Ghost Note<em class="gn-mark">×</em><span>RWJF</span></div>
+    <div class="cover-mid">
+      <div class="cover-kicker">RWJF Account Review</div>
+      <h1>Earn the Structure. Win the Account.</h1>
+      <p class="lede" style="margin-top:20px">Close the $80K retainer now. Stand up the brand program. Compete for the $200K Creative AOR from a position of proof.</p>
+    </div>
+    <dl class="cover-meta">
+      <div><dt>Prepared for</dt><dd>Steven Jumper, Reggie Snowden, Brandon Ellis</dd></div>
+      <div><dt>Author</dt><dd>Fredo Adarkwah · Director of Growth</dd></div>
+      <div><dt>Date</dt><dd>July 2026</dd></div>
+      <div><dt>Companion</dt><dd>Comms Retainer · Creative AOR RFP</dd></div>
+    </dl>
+  </section>
+
+  <!-- 02 THESIS -->
+  <section class="slide invert">
+    <div class="eyebrow"><span>The Thesis</span><span class="idx">02</span></div>
+    <div class="body thesis-body">
+      <h2>The ceiling on this account is set by us, not the client.</h2>
+      <div class="rule"></div>
+      <p class="lede" style="max-width:58ch">RWJF has effectively unlimited capacity to fund communications, a mission that requires exactly what we do, and a relationship where we already define the value and shape the scope.</p>
+      <p style="max-width:58ch;margin-top:20px">So the question was never <em>can we win the work.</em> It's whether we build the structure that lets us hold it — a named pod, a real operating rhythm, a burn we can defend. <strong>Structure is what converts a good relationship into a book of business.</strong></p>
+      <p style="max-width:58ch">Close the retainer. Run the program. Then compete for the AOR having already shown them what an agency of record looks like.</p>
+    </div>
+  </section>
+
+  <!-- 03 TWO MOVES -->
+  <section class="slide">
+    <div class="eyebrow"><span>Two Moves, In Sequence</span><span class="idx">03</span></div>
+    <div class="body">
+      <p class="lede" style="margin-bottom:30px">Close the retainer now. Compete for the AOR next. One earns the other.</p>
+      <div class="bids">
+        <div class="bid primary">
+          <div class="bid-tag">Move One · Immediate</div>
+          <div class="bid-val">$80K</div>
+          <div class="bid-name">Comms Retainer · via Mega, through 12/31</div>
+          <p>Ours to close now. Stands up the brand program, staffs the pod, and puts a proven operating structure in front of the client — the structure that becomes our case for the AOR.</p>
+        </div>
+        <div class="bid contest">
+          <div class="bid-tag">Move Two · What We're Competing For</div>
+          <div class="bid-val">$200K</div>
+          <div class="bid-name">Creative AOR RFP · Q4 (Sept–Dec)</div>
+          <p>The standing agency-of-record engagement. Competitive. The strategic prize — and the credential that opens the entire foundation sector.</p>
+        </div>
+      </div>
+      <div class="rule"></div>
+      <div class="deadlines">
+        <div class="dl-head">Move One · Submission Path</div>
+        <div class="dl-track">
+          <div class="dl-step done">
+            <div class="dl-dot"></div>
+            <div class="dl-when">Now</div>
+            <div class="dl-what">Team review<br><span>Scope of work circulated internally</span></div>
+          </div>
+          <div class="dl-step">
+            <div class="dl-dot"></div>
+            <div class="dl-when">EOW · Fri Jul 10</div>
+            <div class="dl-what">Due to Jody<br><span>Google Doc, outside the system, per her process</span></div>
+          </div>
+          <div class="dl-step hot">
+            <div class="dl-dot"></div>
+            <div class="dl-when">Fri Jul 17 · 3:00PM ET</div>
+            <div class="dl-what">Due to Mega / RWJF<br><span>Hard submission deadline</span></div>
+          </div>
+        </div>
+      </div>
+      <p><strong>The sequence is the strategy.</strong> The retainer is immediate and ours to win. It's also the proof: three months of a functioning brand program — a named pod, a weekly rhythm, a clean burn — is the strongest possible argument we can make when the AOR goes competitive. <strong>We don't pitch the structure. We demonstrate it, then bid.</strong></p>
+      <a class="doclink inline" href="https://docs.google.com/document/d/1fw9tH4ntxDTwMJhPaduiAalQjljSTwg-cOOtdDr-Cag/edit" target="_blank" rel="noopener">
+        <span class="dl-t">$80K Scope of Work</span>
+        <span class="dl-n">Communication Support to Ideas for an Equitable Future Team Futuring Initiatives →</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- 04 THE CLIENT -->
+  <section class="slide">
+    <div class="eyebrow"><span>Where They Sit in the Market</span><span class="idx">04</span></div>
+    <div class="body">
+      <h2 style="max-width:16ch">Not a nonprofit stretching a line item.</h2>
+      <p style="margin-bottom:30px">The largest U.S. philanthropy devoted solely to health — and among the largest foundations, full stop.</p>
+      <div class="stats">
+        <div class="stat"><div class="stat-n">$13.4B</div><div class="stat-l">Endowment · ~$14B AUM mid-2024</div></div>
+        <div class="stat"><div class="stat-n">$544M</div><div class="stat-l">Annual grantmaking (2023)</div></div>
+        <div class="stat"><div class="stat-n">$855M</div><div class="stat-l">2024 revenue</div></div>
+        <div class="stat"><div class="stat-n">0.04%</div><div class="stat-l">What a $200K AOR represents of annual giving</div></div>
+      </div>
+      <div class="rule"></div>
+      <p style="max-width:72ch">A client spending on the order of half a billion dollars a year to advance ideas, with an endowment structured to sustain it indefinitely. <strong>The constraint on this account is never their budget. It's our capacity and imagination.</strong></p>
+    </div>
+  </section>
+
+  <!-- 05 MARKET MOMENT -->
+  <section class="slide">
+    <div class="eyebrow"><span>The Market Moment</span><span class="idx">05</span></div>
+    <div class="body">
+      <h2 style="max-width:18ch">Three tailwinds, all pointing the same direction.</h2>
+      <div class="stack" style="margin-top:26px">
+        <div class="row">
+          <div class="row-k">Storytelling is becoming infrastructure</div>
+          <div class="row-v">Leading institutions now treat narrative as strategic infrastructure with long-term investment — shifting from outputs to measurable mission outcomes. That's a shift toward exactly the retained, program-level partnership an AOR formalizes.</div>
+        </div>
+        <div class="row">
+          <div class="row-k">Foundations are filling the void — loudly</div>
+          <div class="row-v">With federal and corporate funding contracting, large private foundations are stepping in and communicating aggressively about why. RWJF's president has framed 2025–26 as a moment requiring the foundation to defend its mission out loud. <em>Communication is no longer background noise; it's a battlefield.</em></div>
+        </div>
+        <div class="row">
+          <div class="row-k">Futures-thinking is their bet — and it's ours to build</div>
+          <div class="row-v">DiF, Dispatch, the Futuring home. RWJF occupies intellectual territory almost no other funder does. We built the frameworks and the visual language. That's co-authored work, not a replaceable vendor line.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 06 BRAND PROGRAM -->
+  <section class="slide invert">
+    <div class="eyebrow"><span>The Reframe</span><span class="idx">06</span></div>
+    <div class="body thesis-body">
+      <h2 style="max-width:17ch">We're not selling projects. We're standing up a brand program.</h2>
+      <div class="rule"></div>
+      <p class="lede" style="max-width:56ch">A dedicated pod. A defined operating rhythm. A clean monthly delivery engine that treats RWJF's futures-thinking work as a brand we steward over time.</p>
+      <p style="max-width:56ch;margin-top:20px">Whether it's funded through the AOR or the retainer — <strong>the program is the product.</strong></p>
+    </div>
+  </section>
+
+  <!-- 07 THE POD -->
+  <section class="slide">
+    <div class="eyebrow"><span>The Pod · Org Chart</span><span class="idx">07</span></div>
+    <div class="body">
+      <p class="lede" style="margin-bottom:26px">Cross-functional, dedicated, and resourced to run a program at pace.</p>
+      <div class="pods">
+        <div class="pod">
+          <div class="pod-h">Strategy</div>
+          <ul>
+            <li class="lead"><b>Sarah Duarte <i>· Director of Strategy</i></b>Program strategy — counsel, working sessions, content review, messaging direction.</li>
+            <li><b>LaTrice Wooden <i>· Sr. Strategist</i></b>Messaging depth, audience engagement, editorial.</li>
+            <li class="tbd"><b>Copywriter</b>Discrete copy across program moments. On-call bench.</li>
+          </ul>
+        </div>
+        <div class="pod">
+          <div class="pod-h">Design</div>
+          <ul>
+            <li class="tbd"><b>Creative Director</b>Creative and brand direction. Owns the visual system. <strong>Open hire — critical path.</strong></li>
+            <li><b>Natalia Arias <i>· Creative Lead</i></b>Design engine and continuity anchor with the client.</li>
+            <li class="tbd"><b>Designer</b>Second production hand — parallel workstreams at pace. Jahred Corbin recommended.</li>
+            <li class="tbd"><b>Web / Digital Designer</b>Digital, interactive, container build support. On-call bench.</li>
+          </ul>
+        </div>
+        <div class="pod">
+          <div class="pod-h">Account</div>
+          <ul>
+            <li class="lead"><b>Fredo Adarkwah <i>· Director of Growth</i></b>Program lead — account direction, client relationship, budget stewardship, creative oversight.</li>
+            <li><b>Nadja Boncoeur-Creavalle <i>· Operations</i></b>Logistics, planning sessions, capacity, multi-firm coordination.</li>
+          </ul>
+        </div>
+        <div class="pod">
+          <div class="pod-h">Executive</div>
+          <ul>
+            <li><b>Reggie Snowden <i>· President</i></b>Relationship continuity and executive partnership.</li>
+            <li><b>Steven Jumper <i>· CEO</i></b>Communications-strategy signature and positioning.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="rule"></div>
+      <p><strong>On program leadership.</strong> This is the account where account leadership and creative leadership have to move as one. That ownership sits with me.</p>
+      <p class="flag"><strong>Four seats to fill.</strong> The Creative Director is the critical path — the program needs design leadership owning the visual system before the AOR lands. Designer, Copywriter, and Web/Digital are bench roles that flex with the month's priorities.</p>
+    </div>
+  </section>
+
+  <!-- 08 HOURS & ALLOCATION -->
+  <section class="slide">
+    <div class="eyebrow"><span>Hours &amp; Allocation</span><span class="idx">08</span></div>
+    <div class="body">
+      <h2 style="max-width:18ch">Reserved capacity, allocated monthly.</h2>
+      <p style="margin-bottom:22px">The $80K retainer modeled in full — 379 hours across the pod. This is the structure we put in front of the client now, and the model the AOR scales.</p>
+      <table>
+        <thead><tr><th>Role</th><th class="n">Rate</th><th class="n">Hours</th><th class="n">Total</th></tr></thead>
+        <tbody>
+          <tr><td>Sarah Duarte · Strategy Lead</td><td class="n num">$235</td><td class="n num">105</td><td class="n num">$24,675</td></tr>
+          <tr><td>LaTrice Wooden · Sr. Strategist</td><td class="n num">$180</td><td class="n num">20</td><td class="n num">$3,600</td></tr>
+          <tr class="tbd-row"><td>Copywriter <em class="tbd-tag">TBD</em></td><td class="n num">$150</td><td class="n num">25</td><td class="n num">$3,750</td></tr>
+          <tr class="tbd-row"><td>Creative Director <em class="tbd-tag">TBD</em></td><td class="n num">$275</td><td class="n num">32</td><td class="n num">$8,800</td></tr>
+          <tr><td>Natalia Arias · Creative Lead</td><td class="n num">$200</td><td class="n num">72</td><td class="n num">$14,400</td></tr>
+          <tr class="tbd-row"><td>Designer <em class="tbd-tag">TBD</em></td><td class="n num">$170</td><td class="n num">42</td><td class="n num">$7,140</td></tr>
+          <tr class="tbd-row"><td>Web / Digital Designer <em class="tbd-tag">TBD</em></td><td class="n num">$170</td><td class="n num">18</td><td class="n num">$3,060</td></tr>
+          <tr><td>Nadja Boncoeur-Creavalle · Ops</td><td class="n num">$175</td><td class="n num">45</td><td class="n num">$7,875</td></tr>
+          <tr><td>Fredo Adarkwah · Program Lead</td><td class="n num">$235</td><td class="n num">12</td><td class="n num">$2,820</td></tr>
+          <tr><td>Reggie Snowden · President</td><td class="n num">$315</td><td class="n num">6</td><td class="n num">$1,890</td></tr>
+          <tr><td>Steven Jumper · CEO</td><td class="n num">$315</td><td class="n num">2</td><td class="n num">$630</td></tr>
+          <tr><td style="color:var(--ash);font-weight:400">Travel · one 2-day, 2-person Princeton trip</td><td class="n"></td><td class="n"></td><td class="n num">$1,360</td></tr>
+          <tr class="total"><td>Total</td><td class="n"></td><td class="n num">379</td><td class="n num">$80,000</td></tr>
+        </tbody>
+      </table>
+      <div class="rule"></div>
+      <div class="split">
+        <div>
+          <h3>By Service Area</h3>
+          <div class="alloc">
+            <div class="al"><span>Strategy</span><b>41%</b><i>$32,025 · 150 hrs</i></div>
+            <div class="al"><span>Design</span><b>42%</b><i>$33,400 · 164 hrs</i></div>
+            <div class="al"><span>Account</span><b>14%</b><i>$10,695 · 57 hrs</i></div>
+            <div class="al"><span>Executive</span><b>3%</b><i>$2,520 · 8 hrs</i></div>
+          </div>
+          <a class="doclink" href="https://docs.google.com/document/d/1fw9tH4ntxDTwMJhPaduiAalQjljSTwg-cOOtdDr-Cag/edit" target="_blank" rel="noopener">
+            <span class="dl-t">Full scope of work</span>
+            <span class="dl-n">Communication Support to Ideas for an Equitable Future Team Futuring Initiatives →</span>
+          </a>
+        </div>
+        <div>
+          <h3>Open Calls</h3>
+          <ul class="calls">
+            <li class="hot"><b>Creative Director rate</b> — held at $275 as the role rate. Hours flex to hold the line if the hire prices differently.</li>
+            <li class="hot"><b>Designer</b> — Jahred Corbin recommended. Knows the account, no onboarding cost. Confirm availability.</li>
+            <li><b>Reggie / Steven weighting</b> — 6 / 2 today. If Reggie takes real oversight, flip it.</li>
+            <li><b>Production vendor</b> — motion/video kept out of the number. Routes to FP or a change order.</li>
+            <li><b>Sarah load</b> — 105 hrs (~21/mo). If light, add Sarah — never a second strategist-of-record.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 09 OPERATING RHYTHM -->
+  <section class="slide">
+    <div class="eyebrow"><span>Operating Rhythm</span><span class="idx">09</span></div>
+    <div class="body">
+      <h2 style="max-width:15ch">The cadence is part of the product.</h2>
+      <p style="margin-bottom:26px">It's how RWJF experiences us as a standing partner rather than a project vendor.</p>
+      <div class="cadence">
+        <div class="cad"><div class="cad-when">Weekly · Thu</div><div class="cad-what">Multi-agency client call — full program status</div><div class="cad-who">Full pod + Jody, Nina, Gemma</div></div>
+        <div class="cad"><div class="cad-when">Weekly · Wed</div><div class="cad-what">PM connect</div><div class="cad-who">Nadja + Nina</div></div>
+        <div class="cad"><div class="cad-when">5–7 day flex</div><div class="cad-what">Design / brand review — bifurcated cadence</div><div class="cad-who">Creative Director (TBD), Natalia, RWJF</div></div>
+        <div class="cad"><div class="cad-when">Monthly</div><div class="cad-what">Program planning — sets priorities + hour allocation</div><div class="cad-who">Sarah, Nadja, Fredo + Jody, Nina</div></div>
+        <div class="cad"><div class="cad-when">Weekly · Tue</div><div class="cad-what">Internal pod check-in — burn vs. target</div><div class="cad-who">Full GN pod</div></div>
+        <div class="cad"><div class="cad-when">Monthly</div><div class="cad-what">Account review — burn vs. plan, invoice-routing audit</div><div class="cad-who">Fredo, Nadja, Brandon</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10 BURN -->
+  <section class="slide">
+    <div class="eyebrow"><span>The Clean-Rate Burn</span><span class="idx">10</span></div>
+    <div class="body">
+      <h2 style="max-width:19ch">Dollars convert evenly. The engagement closes soft, not scrambled.</h2>
+      <p style="margin-bottom:6px">The $80K retainer, Aug–Dec. Front-loaded strategy, mid-loaded design, deliberate taper — landing exactly on the number with no year-end scramble.</p>
+      <div class="burn" id="burn">
+        <div class="bar"><span class="bar-val">$15.5K</span><div class="bar-fill" data-h="84"></div></div>
+        <div class="bar"><span class="bar-val">$18.4K</span><div class="bar-fill" data-h="100"></div></div>
+        <div class="bar"><span class="bar-val">$18.1K</span><div class="bar-fill" data-h="98"></div></div>
+        <div class="bar"><span class="bar-val">$16.3K</span><div class="bar-fill" data-h="88"></div></div>
+        <div class="bar"><span class="bar-val">$10.4K</span><div class="bar-fill" data-h="56"></div></div>
+      </div>
+      <div class="burn-x"><div>Aug</div><div>Sep</div><div>Oct</div><div>Nov</div><div>Dec</div></div>
+      <div class="legend">
+        <span><i class="swatch solid"></i> Cumulative: $15.5K → $33.9K → $52K → $68.3K → $80K</span>
+      </div>
+      <div class="rule"></div>
+      <p style="max-width:72ch"><strong>This burn is the AOR argument.</strong> Five months of a program that spends predictably, closes clean, and never asks for a rescue conversation. When the $200K AOR goes competitive, we don't describe our operating discipline — we point at it. The AOR scales the same curve at roughly $50K/month across Q4.</p>
+      <p style="max-width:72ch"><strong>Burn governance.</strong> Monthly planning allocates the coming period's hours against priorities. Under-burn rolls forward. A mid-quarter true-up reallocates anything trending unspent — the safety valve on any hard end-date.</p>
+    </div>
+  </section>
+
+  <!-- 11 WHY OVER-INVEST -->
+  <section class="slide">
+    <div class="eyebrow"><span>Why We Over-Invest Here</span><span class="idx">11</span></div>
+    <div class="body">
+      <h2 style="max-width:20ch">Plenty of clients have dollars. This one lets us design the value.</h2>
+      <div class="stack" style="margin-top:24px">
+        <div class="row"><div class="row-k">We set the ceiling</div><div class="row-v">Two budget pools today, a path to a third, a $200K AOR in play, and a president positioning for more. The constraint on growth is our capacity — not their willingness to fund.</div></div>
+        <div class="row"><div class="row-k">We define the value</div><div class="row-v">The client has repeatedly let us shape scope, structure, and pricing. When they trust you to define what good looks like, margin and scope are yours to design — and an AOR institutionalizes that.</div></div>
+        <div class="row"><div class="row-k">The relationship is a moat</div><div class="row-v">Two years of accumulated fluency in a domain they're still defining. Switching cost measured in years, not dollars.</div></div>
+        <div class="row"><div class="row-k">It opens the sector</div><div class="row-v">"Creative AOR for the Robert Wood Johnson Foundation" wins the next five foundation pitches — Ford, Kresge, Kellogg, the Culture-of-Health peer set.</div></div>
+        <div class="row"><div class="row-k">It compounds</div><div class="row-v">DiF launched Dispatch. Dispatch surfaces the Futuring home. The home surfaces the quiz and the containers. Serviced well, the account generates its own pipeline.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 12 GROWTH -->
+  <section class="slide">
+    <div class="eyebrow"><span>The Growth Target</span><span class="idx">12</span></div>
+    <div class="body">
+      <h2 style="max-width:20ch">$500K+ annual, multi-year, within 18 months.</h2>
+      <p style="margin-bottom:26px">Anchored by the AOR. The reference account for a foundation-sector book of business.</p>
+      <div class="growth">
+        <div class="g"><div class="g-h">Today</div><div class="g-n">$160K</div><div class="g-s">FP contract active, extendable</div></div>
+        <div class="g"><div class="g-h">Immediate</div><div class="g-n">+$80K</div><div class="g-s">Comms retainer — the close in hand</div></div>
+        <div class="g"><div class="g-h">Q4 2026</div><div class="g-n">+$200K</div><div class="g-s">Creative AOR — what we compete for</div></div>
+        <div class="g"><div class="g-h">18–24 Months</div><div class="g-n">$500K+</div><div class="g-s">AOR renewed + program layers</div></div>
+      </div>
+      <div class="rule"></div>
+      <p style="max-width:74ch">A $500K annual relationship is under 0.1% of RWJF's annual grantmaking and rounding error against a $13.4B endowment. <strong>The growth constraint is entirely our ability to staff and deliver</strong> — which is why the pod and the operating model matter as much as the sales motion.</p>
+    </div>
+  </section>
+
+  <!-- 13 THE LADDER -->
+  <section class="slide">
+    <div class="eyebrow"><span>How the Documents Ladder</span><span class="idx">13</span></div>
+    <div class="body">
+      <p class="lede" style="margin-bottom:32px">Two external proposals. One program behind them. The first earns the second.</p>
+      <div class="ladder">
+        <div class="lad">
+          <div class="lad-t">Now · In front of the client</div>
+          <h4>Comms Retainer</h4>
+          <p><strong>$80K, via Mega, through 12/31.</strong> The immediate close. Stands up the pod, establishes the operating rhythm, and starts the clean-burn track record. Every month it runs is evidence in the AOR file.</p>
+        </div>
+        <div class="lad sub">
+          <div class="lad-t">Next · Competitive</div>
+          <h4>Creative AOR RFP</h4>
+          <p><strong>$200K, Q4.</strong> The bid that changes our position — from one of several firms the client coordinates, to the firm the others coordinate through. We enter it having already demonstrated the structure everyone else will only describe.</p>
+        </div>
+      </div>
+      <div class="rule"></div>
+      <p style="max-width:74ch"><strong>The internal reframe.</strong> We stop thinking of RWJF as projects we win and start treating it as a book of business we architect. Every retainer deliverable is evidence for the AOR case. Every planning session is discovery for the RFP. <strong>We're building the demand that makes the AOR ours to lose.</strong></p>
+    </div>
+  </section>
+
+  <!-- 14 OPERATIONAL BUILD -->
+  <section class="slide">
+    <div class="eyebrow"><span>Operational Build</span><span class="idx">14</span></div>
+    <div class="body">
+      <h2 style="max-width:18ch">Winning the account is half the work.</h2>
+      <p style="margin-bottom:24px">Holding it at 2x scale requires the internal build to match.</p>
+      <div class="stack">
+        <div class="row"><div class="row-k">Stand up the pod formally</div><div class="row-v">Named roles, clear program lead, design leadership in place. The pod <em>is</em> the deliverable — resource it before the AOR lands, not after.</div></div>
+        <div class="row"><div class="row-k">Build design-leadership depth</div><div class="row-v">A Creative Director owning the visual system, plus a two-person production bench so parallel workstreams move at pace. Enablement, not overhead.</div></div>
+        <div class="row"><div class="row-k">Instrument for the AOR case</div><div class="row-v">Capture outcomes and the cost of vendor fragmentation now, so the RFP narrative writes itself from real evidence.</div></div>
+        <div class="row"><div class="row-k">Tighten invoice routing</div><div class="row-v">FP, AOR/retainer, and any third bucket stay cleanly separated and correctly labeled. The finance discipline that lets us scale without compliance friction.</div></div>
+        <div class="row"><div class="row-k">Run the rhythm from day one</div><div class="row-v">Weekly client and internal cadence, monthly planning, monthly account review. The rhythm is how the program stays profitable — and how RWJF experiences us as a partner.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 15 NEXT -->
+  <section class="slide invert">
+    <div class="eyebrow"><span>What We Do Next</span><span class="idx">15</span></div>
+    <div class="body close-body">
+      <h2 style="max-width:15ch;margin-bottom:28px">The next five moves.</h2>
+      <ol class="next">
+        <li><div><b>Close the $80K retainer <em class="due">Jody EOW · Mega 7/17, 3PM ET</em></b><span>Submit through Mega. Immediate, ours to win, and the foundation for everything after it.</span></div></li>
+        <li><div><b>Stand up the pod and operating model</b><span>Fill the Creative Director seat. Resource to hold 2x. The constraint is capacity, not demand.</span></div></li>
+        <li><div><b>Protect the relationship through the design-leadership transition</b><span>Handled directly with the client, ahead of any proposal — so continuity is a strength we name, not a gap they discover.</span></div></li>
+        <li><div><b>Run the program visibly and instrument it</b><span>Weekly rhythm, monthly planning, clean burn. Capture outcomes and the cost of vendor fragmentation as they happen.</span></div></li>
+        <li><div><b>Compete for the $200K AOR from a position of proof</b><span>Enter the RFP having already demonstrated the structure. Every retainer month is a data point in the narrative.</span></div></li>
+      </ol>
+      <div class="signoff">
+        <span class="so-mark">Ghost Note</span>
+        <span class="so-note">Earn the structure. Win the account.</span>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<nav id="nav">
+  <div class="dots" id="dots"></div>
+  <div class="navr">
+    <div class="counter"><b id="cur">01</b> / <span id="tot">14</span></div>
+    <button id="prev" aria-label="Previous slide">Prev</button>
+    <button id="next" aria-label="Next slide">Next</button>
+  </div>
+</nav>
+
+<script>
+  const rail = document.getElementById('rail');
+  const slides = [...document.querySelectorAll('.slide')];
+  const dots = document.getElementById('dots');
+  const nav = document.getElementById('nav');
+  const conf = document.getElementById('conf');
+  const prev = document.getElementById('prev');
+  const next = document.getElementById('next');
+  const cur = document.getElementById('cur');
+  document.getElementById('tot').textContent = String(slides.length).padStart(2,'0');
+
+  let i = 0;
+  const pad = n => String(n+1).padStart(2,'0');
+
+  slides.forEach((_,n)=>{
+    const d = document.createElement('i');
+    d.addEventListener('click',()=>go(n));
+    dots.appendChild(d);
+  });
+  const dotEls = [...dots.children];
+
+  function paintBurn(){
+    const active = slides[i];
+    const bars = active.querySelectorAll('.bar-fill');
+    bars.forEach(b=>{ b.style.height='0%'; });
+    requestAnimationFrame(()=>{
+      setTimeout(()=>bars.forEach(b=>{ b.style.height = b.dataset.h + '%'; }),120);
+    });
+  }
+
+  function go(n){
+    i = Math.max(0, Math.min(slides.length-1, n));
+    rail.style.transform = `translateX(-${i*100}vw)`;
+    cur.textContent = pad(i);
+    dotEls.forEach((d,k)=>d.classList.toggle('on',k===i));
+    prev.disabled = i===0;
+    next.disabled = i===slides.length-1;
+    const dark = slides[i].classList.contains('invert');
+    nav.classList.toggle('dark',dark);
+    conf.classList.toggle('dark',dark);
+    slides.forEach(s=>s.querySelector('.body')?.scrollTo(0,0));
+    if(slides[i].querySelector('.bar-fill')) paintBurn();
+  }
+
+  prev.addEventListener('click',()=>go(i-1));
+  next.addEventListener('click',()=>go(i+1));
+  window.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){e.preventDefault();go(i+1);}
+    if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();go(i-1);}
+    if(e.key==='Home')go(0);
+    if(e.key==='End')go(slides.length-1);
+  });
+
+  let x0=null;
+  rail.addEventListener('touchstart',e=>x0=e.touches[0].clientX,{passive:true});
+  rail.addEventListener('touchend',e=>{
+    if(x0===null)return;
+    const dx = e.changedTouches[0].clientX - x0;
+    if(Math.abs(dx)>60) go(dx<0 ? i+1 : i-1);
+    x0=null;
+  },{passive:true});
+
+  go(0);
+</script>
+</body>
+</html>
